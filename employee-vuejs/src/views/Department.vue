@@ -1,10 +1,11 @@
 <template>
     <div class="container">
-        <div class="options"> 
-            <select @change="sortList(value)">
+        <div class="options">
+            <label> ORDER BY DEPARTMENT NAME</label>
+            <select v-model="order" @change="sortList(order)">
                 <option selected value=""> ORDER BY </option> 
                 <option value="asc"> ASC </option>
-                <option value="desc "> DESC </option>
+                <option value="desc"> DESC </option>
             </select>
             <button @click="add"> ADD </button>
             <div class="add" v-if="toAdd">
@@ -60,7 +61,15 @@ export default{
             toEdit : false,
         };
     },
+     
     methods: {
+        validateInput(){
+            if(this.department.name == ""){
+                alert("Department name is required");
+                return false;
+            }
+            return true;
+        },
         async sortList(value) {
             if (value == "asc") {
                 this.allDepartments.sort(function (a, b) {
@@ -74,20 +83,26 @@ export default{
                     }
                     return 0;
                 });
-                console.log(this.allDepartments);
             }
-            else if (value == "desc") {
+            else if(value == "desc") {
                 this.allDepartments.sort((a, b) => {
-                    return b.name - a.name;
+                    let x = a.name.toLowerCase();
+                    let y = b.name.toLowerCase();
+                    if (x < y) {
+                        return -1;
+                    }
+                    if (x > y) {
+                        return 1;
+                    }
+                    return 0;
                 });
                 this.allDepartments.reverse();
-                console.log(this.allDepartments);
             }
             else {
-                return;
+                const fetchDepartments = await this.instance.get('/department');
+                this.allDepartments = fetchDepartments.data;
             }
-            // const fetchDepartments = await this.instance.get('/department');
-            // this.allDepartments = fetchDepartments.data;
+            
         },
         async deleteDepartment(key) {
             console.log(key);
@@ -104,12 +119,14 @@ export default{
             this.toAdd = true;
         },
         async addDepartment(){
-            const result = await this.instance.post('/department', {name : this.department.name}).catch(err => console.log(err));
-            console.log(result.data);
-            const fetchDepartments = await this.instance.get("/department");
-            this.allDepartments = fetchDepartments.data;
-            this.toAdd = false;
-            this.clearForm();
+            if(this.validateInput()){
+                const result = await this.instance.post('/department', {name : this.department.name}).catch(err => console.log(err));
+                console.log(result.data);
+                const fetchDepartments = await this.instance.get("/department");
+                this.allDepartments = fetchDepartments.data;
+                this.toAdd = false;
+                this.clearForm();
+            }   
         },
         clearForm(){
             this.department.name = ''
@@ -121,13 +138,16 @@ export default{
             this.toAdd = true;
         },
         async updateDepartment(){
-            console.log(this.department)
-            const result = await this.instance.put('/department', this.department);
-            console.log(result);
-            this.toEdit = false;
-            this.toAdd = false; 
-            const fetchDepartments = await this.instance.get("/department");
-            this.allDepartments = fetchDepartments.data;
+            if(this.validateInput())
+            {
+                const result = await this.instance.put('/department', this.department);
+                console.log(result);
+                this.toEdit = false;
+                this.toAdd = false; 
+                const fetchDepartments = await this.instance.get("/department");
+                this.allDepartments = fetchDepartments.data;
+            }
+            
         }
        
     },
@@ -161,6 +181,9 @@ th{
 }
 .options{
     padding-bottom: 20px;
+}
+button{
+    background-color: green;
 }
 button,select{
     padding: 5px;
@@ -211,3 +234,5 @@ font-family:Verdana, Geneva, Tahoma, sans-serif;
   border-radius: 5px;
 }
 </style>
+
+
