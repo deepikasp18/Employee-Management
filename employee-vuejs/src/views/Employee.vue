@@ -12,7 +12,7 @@
             </option>
             </select>
             <label> ORDER BY </label>
-            <select v-model=order @change="sortList(order)">
+            <select @change="sortList(order)"  v-model=order>
                 <option selected value=""> ORDER BY </option> 
                 <option value="name_asc">NAME IN ASC </option>
                 <option value="name_desc ">NAME IN DESC </option>
@@ -204,8 +204,6 @@ export default{
         },
         async addEmployee(){
             if(this.validateInput()){
-              //this.employee.dob = dateFormat(this.employee.dob, "isoDate");
-            //   console.log(this.employee.dob);
               const result = await this.instance.post('/employee', this.employee).catch(err => console.log(err));
               console.log(result.data);
               const fetchEmployees = await this.instance.get("/employee");
@@ -238,6 +236,7 @@ export default{
               this.toAdd = false; 
               const fetchEmployees = await this.instance.get("/employee");
               this.Employees = fetchEmployees.data;
+              this.clearForm();
             }
             
         }
@@ -320,6 +319,7 @@ font-family:Verdana, Geneva, Tahoma, sans-serif;
 }
 
 .add{
+    width : 800px;
     margin: 100px;
 }
 .addBtn{

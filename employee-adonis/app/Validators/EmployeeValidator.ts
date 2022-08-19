@@ -23,12 +23,13 @@ export default class EmployeeValidator {
    *     ])
    *    ```
    */
+
   public schema = schema.create({
       name: schema.string([rules.alpha({ allow : ['space']})]),
       dob: schema.date(),
       doj: schema.date(),
       email : schema.string([rules.email(),
-                             rules.unique({table : 'employees', column : 'email'})]),
+                             rules.unique({table : 'employees', column : 'email', whereNot : { id : this.ctx.request.input('id')} })]),
       phone : schema.string([rules.mobile({  locale : ['en-IN']} )]),
       departmentId : schema.number([rules.exists({table : 'departments', column: 'id'})]),
   })
