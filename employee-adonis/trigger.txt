@@ -1,0 +1,20 @@
+CREATE OR REPLACE FUNCTION action_log_information() RETURNS TRIGGER 
+AS
+$logs$
+BEGIN
+IF (TG_OP = 'INSERT') THEN
+    INSERT INTO public.logs(action) VALUES ('Insert performed');
+ELSEIF (TG_OP = 'UPDATE') THEN
+    INSERT INTO public.logs(action) VALUES ('Update performed');
+ELSEIF (TG_OP = 'DELETE') THEN
+    INSERT INTO public.logs(action) VALUES ('Delete performed');
+END IF;
+RETURN NULL;
+END;
+$logs$
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER action_log_trigger   
+AFTER INSERT OR UPDATE OR DELETE ON public.employees
+FOR EACH ROW
+EXECUTE PROCEDURE action_log_information();
