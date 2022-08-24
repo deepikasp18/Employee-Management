@@ -2,7 +2,7 @@
     <div class="container">
         <div class="options"> 
             <label>FILTER BY DEPARTMENT</label>
-            <select  @change="updateList(departmentName)" v-model="departmentName" >
+            <select  @change="filterList" v-model="departmentName" >
             <option selected value="" > Select a department </option>
             <option 
                 v-for="department in allDepartments" 
@@ -11,13 +11,18 @@
                 {{ department.name }}
             </option>
             </select>
-            <label> ORDER BY </label>
-            <select @change="sortList(order)"  v-model=order>
+            <label> ORDER BY NAME </label>
+            <select class="sort" @change="sortByName"  v-model=orderByName>
                 <option selected value=""> ORDER BY </option> 
-                <option value="name_asc">NAME IN ASC </option>
-                <option value="name_desc ">NAME IN DESC </option>
-                <option value="department_asc ">DEPARTMENT IN ASC </option>
-                <option value="department_desc ">DEPARTMENT IN DESC </option>
+                <option value="asc"> ASC </option>
+                <option value="desc"> DESC </option>
+                
+            </select>
+            <label> ORDER BY DEPARTMENT </label>
+            <select class="sort" @change="sortByDepartment"  v-model=orderByDepartment>
+                <option selected value=""> ORDER BY </option> 
+                <option value="asc">ASC </option>
+                <option value="desc">DESC </option>
             </select>
             <button @click="add"> ADD </button>
             <div class="add" v-if="toAdd">
@@ -75,7 +80,7 @@
                 <td>{{ this.formatDate(employee.doj) }}</td>
                 <td>{{ employee.email }}</td>
                 <td>{{ employee.phone }}</td>
-                <td>{{ employee.departmentName}}</td>
+                <td>{{ employee.meta.departmentName}}</td>
                 <td>
                 <button class="editBtn" @click="editEmployee(employee.id)">edit</button>
                 <button class="deleteBtn" @click="deleteEmployee(employee.id)">delete</button>
@@ -116,6 +121,8 @@ export default{
             Employees : [],
             toAdd : false,
             toEdit : false,
+            orderByName : '',
+            orderByDepartment : ''
         };
     },
     methods: {
@@ -144,50 +151,29 @@ export default{
             }
             return true;
         },
-        updateList(departmentName){
-            console.log(this.Employees)
-            this.Employees = departmentName === "" ? this.allEmployees : this.allEmployees.filter((value) => {
-                                                                                                return value.departmentName == departmentName
-                                                                                            }, departmentName)   
+        filterList(){
+            console.log(this.departmentName)
+            this.Employees = this.departmentName === "" ? this.allEmployees : this.allEmployees.filter((value) => {
+                                                                                                return value.meta.departmentName == this.departmentName
+                                                                                            }, this.departmentName)   
         },
-        async sortList(order) {
-            if (order.includes('name')) {
-                this.Employees.sort(function (a, b) {
-                    let x = a.name.toLowerCase();
-                    let y = b.name.toLowerCase();
-                    if (x < y) {
-                        return -1;
-                    }
-                    if (x > y) {
-                        return 1;
-                    }
-                    return 0;
-                });
-                if(order.includes('desc')){
-                    this.Employees.reverse();
-                }
+        async sortByName(){
+            if(this.orderByName !== ''){
+                const fetchEmployees = await this.instance.get('/employee/orderbyname?orderValue=' + this.orderByName);
+                this.Employees = fetchEmployees.data;
+            }else{
+                const fetchEmployees = await this.instance.get("/employee");
+                this.Employees = fetchEmployees.data;       
             }
-            else if (order.includes('department')) {
-                this.Employees.sort(function (a, b) {
-                    let x = a.departmentName.toLowerCase();
-                    let y = b.departmentName.toLowerCase();
-                    if (x < y) {
-                        return -1;
-                    }
-                    if (x > y) {
-                        return 1;
-                    }
-                    return 0;
-                });
-                if(order.includes('desc')){
-                    this.Employees.reverse();
-                }
+        },
+        async sortByDepartment(){
+            if(this.orderByDepartment !== ''){
+                const fetchEmployees = await this.instance.get('/employee/orderbydepartment?orderValue=' + this.orderByDepartment);
+                this.Employees = fetchEmployees.data;
+            }else{
+                const fetchEmployees = await this.instance.get("/employee");
+                this.Employees = fetchEmployees.data;
             }
-            else {
-                const fetchDepartments = await this.instance.get('/department');
-                this.allDepartments = fetchDepartments.data;
-            }
-            
         },
         async deleteEmployee(key) {
             console.log(key);
@@ -278,14 +264,19 @@ th{
     padding-bottom: 20px;
 }
 button{
-    background-color: green;
     padding: 5px;
     margin: 15px;
-    margin-right:auto
+    margin-right:auto;
+    border-radius: 25px;
+    background-color: rgb(28, 179, 28);
+}
+
+.options .sort{
+    width: 120px;;
 }
 .options select{
     width : 150px;
-    margin: 20px;
+    margin: 15px;
 }
 .editBtn{
   background-color: #e8ff16;
@@ -329,7 +320,7 @@ font-family:Verdana, Geneva, Tahoma, sans-serif;
   font-size: large;
   margin-top: 15px;
   margin-left: auto;
-  background-color: rgb(28, 179, 28);
+  background-color: rgb(79, 214, 79);
   border: none;
   border-radius: 5px;
 }

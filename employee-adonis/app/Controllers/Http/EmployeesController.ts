@@ -28,6 +28,7 @@ export default class EmployeesController {
 
     public async fetch(){
                                 
+        
         const allEmployees = await Employee.query()
                                            .join('departments', 'departments.id','employees.department_id')
                                             .select('departments.name as departmentName' )
@@ -37,26 +38,10 @@ export default class EmployeesController {
                                             .select('employees.doj')
                                             .select('employees.email')
                                             .select('employees.phone');
-    
-        const allDetails : any = []
-
-        allEmployees.forEach((element) => {
-            allDetails.push({
-                name : element.$attributes['name'],
-                id : element.$attributes['id'],
-                dob : element.$attributes['dob'],
-                doj : element.$attributes['doj'],
-                email : element.$attributes['email'],
-                phone : element.$attributes['phone'],
-                departmentName : element.$extras['departmentName']
-            })
-        })
-
-        console.log(allDetails)
-        if(allDetails == null){
-            return "No employees to show"
-        }
-        return allDetails;
+        
+        
+        const allEmployeesJSON = allEmployees.map((employee) => employee.serialize())
+        return allEmployeesJSON
 
     }
     public async show({request} : HttpContextContract){
@@ -92,6 +77,42 @@ export default class EmployeesController {
         }catch{
             return 'Employee doesnot exists'
         }
+    }
+
+    public async orderByName({request } : HttpContextContract ){
+
+        const orderValue = request.input('orderValue');
+        const allEmployees = await Employee.query()
+                                           .join('departments', 'departments.id','employees.department_id')
+                                            .select('departments.name as departmentName' )
+                                            .select('employees.id')
+                                            .select('employees.name')
+                                            .select('employees.dob')
+                                            .select('employees.doj')
+                                            .select('employees.email')
+                                            .select('employees.phone')
+                                            .orderBy('employees.name', orderValue);
+                               
+        const allEmployeesJSON = allEmployees.map((employee) => employee.serialize())
+        return allEmployeesJSON;
+    }
+
+    public async orderByDepartment({request } : HttpContextContract ){
+
+        const orderValue = request.input('orderValue');
+        const allEmployees = await Employee.query()
+                                           .join('departments', 'departments.id','employees.department_id')
+                                            .select('departments.name as departmentName' )
+                                            .select('employees.id')
+                                            .select('employees.name')
+                                            .select('employees.dob')
+                                            .select('employees.doj')
+                                            .select('employees.email')
+                                            .select('employees.phone')
+                                            .orderBy('departmentName', orderValue);
+                               
+        const allEmployeesJSON = allEmployees.map((employee) => employee.serialize());
+        return allEmployeesJSON;
     }
 
 }

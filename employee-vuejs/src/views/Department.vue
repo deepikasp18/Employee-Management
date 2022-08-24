@@ -2,7 +2,7 @@
     <div class="container">
         <div class="options">
             <label> ORDER BY DEPARTMENT NAME</label>
-            <select v-model="order" @change="sortList(order)">
+            <select v-model="orderBy" @change="sortByName">
                 <option selected value=""> ORDER BY </option> 
                 <option value="asc"> ASC </option>
                 <option value="desc"> DESC </option>
@@ -59,6 +59,7 @@ export default{
             allDepartments: [],
             toAdd : false,
             toEdit : false,
+            orderBy : '',
         };
     },
      
@@ -70,36 +71,12 @@ export default{
             }
             return true;
         },
-        async sortList(value) {
-            if (value == "asc") {
-                this.allDepartments.sort(function (a, b) {
-                    let x = a.name.toLowerCase();
-                    let y = b.name.toLowerCase();
-                    if (x < y) {
-                        return -1;
-                    }
-                    if (x > y) {
-                        return 1;
-                    }
-                    return 0;
-                });
-            }
-            else if(value == "desc") {
-                this.allDepartments.sort((a, b) => {
-                    let x = a.name.toLowerCase();
-                    let y = b.name.toLowerCase();
-                    if (x < y) {
-                        return -1;
-                    }
-                    if (x > y) {
-                        return 1;
-                    }
-                    return 0;
-                });
-                this.allDepartments.reverse();
-            }
-            else {
-                const fetchDepartments = await this.instance.get('/department');
+        async sortByName() {
+            if(this.orderBy !== ''){
+                const fetchDepartments = await this.instance.get('/department/orderby?orderValue=' + this.orderBy)  ;
+                this.allDepartments = fetchDepartments.data;      
+            }else{
+                const fetchDepartments = await this.instance.get("/department");
                 this.allDepartments = fetchDepartments.data;
             }
             
@@ -183,11 +160,12 @@ th{
     padding-bottom: 20px;
 }
 button{
-    background-color: green;
+    border-radius: 25px;
+    background-color: rgb(28, 179, 28);
 }
 button,select{
     padding: 5px;
-    margin: 5px;
+    margin: 15px;
 }
 .editBtn{
   background-color: #e8ff16;
@@ -229,7 +207,6 @@ font-family:Verdana, Geneva, Tahoma, sans-serif;
   font-size: large;
   margin-top: 15px;
   margin-left: 40%;
-  background-color: rgb(28, 179, 28);
   border: none;
   border-radius: 5px;
 }

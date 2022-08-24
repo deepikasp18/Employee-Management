@@ -57,4 +57,13 @@ export default class DepartmentsController {
             return "Department doesnot exists"
         }
     }
+
+    public async orderBy({request } : HttpContextContract ){
+
+        const orderValue = request.input('orderValue');
+        const departments = await Department
+                                .query()
+                                .orderBy('departments.name', orderValue)
+        return departments;
+    }
 }
